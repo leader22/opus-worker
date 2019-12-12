@@ -6,17 +6,15 @@ export async function setupRecver({ opusHeaderPackets }) {
 
   const decoderInfo = await decoder.setup(opusHeaderPackets);
 
-  console.log(decoderInfo);
+  console.log("[recver] setup decoder w/", decoderInfo);
 
   return { decoder };
 }
 
-export async function runRecver({ decoder }) {
+export async function runRecver({ decoder, sampleRate }) {
   const recver = new BroadcastChannel("opus");
 
-  const sampleRate = 48000;
   const audioContext = new AudioContext({ sampleRate });
-
   const playerNode = new PlayerNode(audioContext);
   playerNode.connect(audioContext.destination);
 
