@@ -1,5 +1,5 @@
 import { AudioDecoder } from "./decoder.js";
-import { PlayerNode } from "./player-node2.js";
+import { PlayerNode } from "./player-node.js";
 
 export async function setupRecver({ opusHeaderPackets }) {
   const decoder = new AudioDecoder("./worker/opus_decode_worker.js");
@@ -22,15 +22,16 @@ export async function runRecver({ decoder, sampleRate }) {
   recver.onmessage = async ({ data }) => {
     for (const packet of data) {
       const { samples } = await decoder.decode(packet);
-      // playerNode.enqueue(samples);
       queue.push(samples);
     }
   };
 
+  window.queue = queue;
+
   playerNode.onneedbuffer = () => {
-    if (queue.length > 0) {
-      const samples = queue.shift();
-      playerNode.enqueue(samples);
-    }
+    if (queue.length === 0) return;
+
+    const samples = queue.shift();
+    playerNode.enqueue(samples);
   };
 }
