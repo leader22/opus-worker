@@ -18,20 +18,12 @@ export async function runRecver({ decoder, sampleRate }) {
   const playerNode = new PlayerNode(audioContext);
   playerNode.connect(audioContext.destination);
 
-  const queue = [];
   recver.onmessage = async ({ data }) => {
     for (const packet of data) {
       const { samples } = await decoder.decode(packet);
-      queue.push(samples);
+      playerNode.enqueueSamples(samples);
     }
   };
 
-  window.queue = queue;
-
-  playerNode.onneedbuffer = () => {
-    if (queue.length === 0) return;
-
-    const samples = queue.shift();
-    playerNode.enqueue(samples);
-  };
+  window.player = playerNode;
 }

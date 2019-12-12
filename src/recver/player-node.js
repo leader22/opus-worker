@@ -1,120 +1,107 @@
+// TODO: refactor this
 import { RingBuffer } from "./ring-buffer.js";
 
 export class PlayerNode {
-  constructor(audioContext) {
-    const num_of_channels = 1;
-    this.context = audioContext;
+  constructor(audioContext, options = {}) {
+    const numOfChannels = options.numOfChannels || 1;
 
-    this.node = this.context.createScriptProcessor(
-      1024,
-      0,
-      num_of_channels
-    );
-    this.node.onaudioprocess = this._onaudioprocess.bind(this);
+    this._node = audioContext.createScriptProcessor(1024, 0, numOfChannels);
+    this._node.onaudioprocess = this._onaudioprocess.bind(this);
 
-    this.in_writing = false;
-    this.buffering = true;
-    this.in_requesting_check_buffer = false;
+    this._isWriting = false;
+    this._isBuffering = true;
+    this._isRequestingCheckBuffer = false;
 
-    this.ringbuf = null;
-    this.period_samples = 1024 * num_of_channels;
-    this.delay_samples = this.period_samples * 4;
+    this._periodSamples = 1024 * numOfChannels;
+    this._delaySamples = this._periodSamples * 4;
 
-    this.ringbuf = new RingBuffer(
-      new Float32Array(this.period_samples * 16)
+    this._queue = [];
+    this._ringBuf = new RingBuffer(
+      new Float32Array(this._periodSamples * 16)
     );
   }
 
-  onneedbuffer() {
-    throw new Error("should be override");
+  connect(dest) {
+    this._node.connect(dest);
   }
 
-  enqueue(data) {
-    return new Promise((resolve, reject) => {
-      if (this.in_writing) {
-        reject();
-        return;
-      }
+  disconnect() {
+    this._node.disconnect();
+  }
 
-      this.in_writing = true;
-      this.ringbuf.append(data).then(
-        () => {
-          this.in_writing = false;
-          this.check_buffer(false);
-        },
-        e => {
-          this.in_writing = false;
-          reject(e);
-        }
-      );
-    });
+  enqueueSamples(samples) {
+    this._queue.push(samples);
+  }
+
+  // TODO: really needed?
+  close() {
+    this._ringBuf.clear();
+    this._isBuffering = true;
+    this._node = null;
+  }
+
+  getBufferStatus() {
+    return {
+      size: this._ringBuf.size(),
+      available: this._ringBuf.available(),
+      capacity: this._ringBuf.capacity()
+    };
   }
 
   _onaudioprocess({ outputBuffer }) {
-    if (this.buffering) {
-      this.check_buffer(false);
+    if (this._isBuffering) {
+      this._checkBuffer(false);
       return;
     }
 
     const N = outputBuffer.numberOfChannels;
     const buf = new Float32Array(outputBuffer.getChannelData(0).length * N);
-    const size = this.ringbuf.read_some(buf) / N;
+    const size = this._ringBuf.read_some(buf) / N;
     for (let i = 0; i < N; ++i) {
       const ch = outputBuffer.getChannelData(i);
       for (let j = 0; j < size; ++j) ch[j] = buf[j * N + i];
     }
 
-    this.check_buffer(true);
+    this._checkBuffer(true);
   }
 
-  check_buffer(useTimeOut) {
-    if (this.in_requesting_check_buffer) return;
-
-    const needbuf = this.check_buffer_internal();
-    if (!needbuf) return;
+  _checkBuffer(useTimeOut) {
+    if (this._isRequestingCheckBuffer) return;
+    if (!this._checkBufferInternal()) return;
 
     if (useTimeOut) {
-      this.in_requesting_check_buffer = true;
-      window.setTimeout(() => {
-        this.in_requesting_check_buffer = false;
-        if (this.check_buffer_internal()) this.onneedbuffer();
+      this._isRequestingCheckBuffer = true;
+      setTimeout(() => {
+        this._isRequestingCheckBuffer = false;
+        if (this._checkBufferInternal()) this._onNeedBuffer();
       }, 0);
     } else {
-      this.onneedbuffer();
+      this._onNeedBuffer();
     }
   }
 
-  check_buffer_internal() {
-    if (this.in_writing) return false;
+  _checkBufferInternal() {
+    if (this._isWriting) return false;
 
-    const avail = this.ringbuf.available();
-    const size = this.ringbuf.size();
+    const avail = this._ringBuf.available();
+    const size = this._ringBuf.size();
 
-    if (size >= this.delay_samples) this.buffering = false;
-    if (this.period_samples <= avail) return true;
+    if (size >= this._delaySamples) this._isBuffering = false;
+    if (this._periodSamples <= avail) return true;
 
     return false;
   }
 
-  connect(dest) {
-    this.node.connect(dest);
-  }
+  async _onNeedBuffer() {
+    if (this._queue.length === 0) return;
+    if (this._isWriting) return;
 
-  close() {
-    if (this.node) {
-      this.ringbuf.clear();
-      this.buffering = true;
-      this.node.disconnect();
-    }
-    this.context = null;
-    this.node = null;
-  }
+    const samples = this._queue.shift();
 
-  getBufferStatus() {
-    return {
-      delay: this.ringbuf.size(),
-      available: this.ringbuf.available(),
-      capacity: this.ringbuf.capacity()
-    };
+    this._isWriting = true;
+    await this._ringBuf.append(samples);
+
+    this._isWriting = false;
+    this._checkBuffer(false);
   }
 }
