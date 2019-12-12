@@ -27,7 +27,7 @@ export class PlayerNode {
     this._node.disconnect();
   }
 
-  enqueueSamples(samples) {
+  enqueue(samples) {
     this._queue.push(samples);
   }
 

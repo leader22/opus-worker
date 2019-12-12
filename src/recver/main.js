@@ -21,7 +21,7 @@ export async function runRecver({ decoder, sampleRate }) {
   recver.onmessage = async ({ data }) => {
     for (const packet of data) {
       const { samples } = await decoder.decode(packet);
-      playerNode.enqueueSamples(samples);
+      playerNode.enqueue(samples);
     }
   };
 
