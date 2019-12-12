@@ -6,7 +6,11 @@ export class PlayerNode {
     const numOfChannels = options.numOfChannels || 1;
     const delayUnit = options.delayUnit || 4;
 
-    this._node = audioContext.createScriptProcessor(sampleSize, 0, numOfChannels);
+    this._node = audioContext.createScriptProcessor(
+      sampleSize,
+      0,
+      numOfChannels
+    );
     this._node.onaudioprocess = this._onaudioprocess.bind(this);
 
     this._isWriting = false;
@@ -17,7 +21,7 @@ export class PlayerNode {
     this._delaySamples = this._periodSamples * delayUnit;
 
     // for playing
-    this._ringBuf = new RingBuffer(new Float32Array(this._delaySamples  * 2));
+    this._ringBuf = new RingBuffer(new Float32Array(this._delaySamples * 2));
     // for storing
     this._queue = [];
   }
@@ -56,6 +60,7 @@ export class PlayerNode {
     }
 
     const N = outputBuffer.numberOfChannels;
+    // TODO: can avoid this..?
     const buf = new Float32Array(outputBuffer.getChannelData(0).length * N);
     const size = this._ringBuf.read(buf) / N;
     for (let i = 0; i < N; ++i) {

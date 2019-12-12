@@ -21,12 +21,14 @@ export class AudioEncoder {
         resolve(data.packets);
       };
 
-      this._worker.postMessage({
-        samples,
-        timestamp: Date.now(),
-        transferable: true
-      },
-      [samples.buffer]);
+      this._worker.postMessage(
+        {
+          samples,
+          timestamp: Date.now(),
+          transferable: true
+        },
+        [samples.buffer]
+      );
     });
   }
 }
