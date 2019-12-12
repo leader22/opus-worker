@@ -60,9 +60,9 @@ export class PlayerNode {
     }
 
     const N = outputBuffer.numberOfChannels;
-    // TODO: can avoid this..?
-    const buf = new Float32Array(outputBuffer.getChannelData(0).length * N);
+    const buf = new Float32Array(outputBuffer.length * N);
     const size = this._ringBuf.read(buf) / N;
+
     for (let i = 0; i < N; ++i) {
       const ch = outputBuffer.getChannelData(i);
       for (let j = 0; j < size; ++j) {
@@ -77,25 +77,28 @@ export class PlayerNode {
     if (this._isRequestingCheckBuffer) return;
     if (!this._checkBufferInternal()) return;
 
-    if (useTimeOut) {
-      this._isRequestingCheckBuffer = true;
-      setTimeout(() => {
-        this._isRequestingCheckBuffer = false;
-        if (this._checkBufferInternal()) this._onNeedBuffer();
-      }, 0);
-    } else {
+    if (!useTimeOut) {
       this._onNeedBuffer();
+      return;
     }
+
+    this._isRequestingCheckBuffer = true;
+    setTimeout(() => {
+      this._isRequestingCheckBuffer = false;
+      this._checkBufferInternal() && this._onNeedBuffer();
+    }, 0);
   }
 
   _checkBufferInternal() {
     if (this._isWriting) return false;
 
-    const avail = this._ringBuf.available();
     const size = this._ringBuf.size();
+    if (this._delaySamples <= size) {
+      this._isBuffering = false;
+    }
 
-    if (size >= this._delaySamples) this._isBuffering = false;
-    if (this._periodSamples <= avail) return true;
+    const available = this._ringBuf.available();
+    if (this._periodSamples <= available) return true;
 
     return false;
   }
@@ -104,12 +107,11 @@ export class PlayerNode {
     if (this._queue.length === 0) return;
     if (this._isWriting) return;
 
-    const samples = this._queue.shift();
-
     this._isWriting = true;
+    const samples = this._queue.shift();
     await this._ringBuf.write(samples);
-
     this._isWriting = false;
+
     this._checkBuffer(false);
   }
 }
