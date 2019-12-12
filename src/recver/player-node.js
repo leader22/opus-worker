@@ -4,6 +4,7 @@ import { RingBuffer } from "./ring-buffer.js";
 export class PlayerNode {
   constructor(audioContext, options = {}) {
     const numOfChannels = options.numOfChannels || 1;
+    const delayUnit = options.delayUnit || 4;
 
     this._node = audioContext.createScriptProcessor(1024, 0, numOfChannels);
     this._node.onaudioprocess = this._onaudioprocess.bind(this);
@@ -13,10 +14,12 @@ export class PlayerNode {
     this._isRequestingCheckBuffer = false;
 
     this._periodSamples = 1024 * numOfChannels;
-    this._delaySamples = this._periodSamples * 4;
+    this._delaySamples = this._periodSamples * delayUnit;
 
+    // for playing
+    this._ringBuf = new RingBuffer(new Float32Array(this._periodSamples * delayUnit * 2));
+    // for storing
     this._queue = [];
-    this._ringBuf = new RingBuffer(new Float32Array(this._periodSamples * 16));
   }
 
   connect(dest) {
