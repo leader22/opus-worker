@@ -1,4 +1,3 @@
-// TODO: refactor this
 import { RingBuffer } from "./ring-buffer.js";
 
 export class PlayerNode {
@@ -57,7 +56,7 @@ export class PlayerNode {
 
     const N = outputBuffer.numberOfChannels;
     const buf = new Float32Array(outputBuffer.getChannelData(0).length * N);
-    const size = this._ringBuf.readSome(buf) / N;
+    const size = this._ringBuf.read(buf) / N;
     for (let i = 0; i < N; ++i) {
       const ch = outputBuffer.getChannelData(i);
       for (let j = 0; j < size; ++j) ch[j] = buf[j * N + i];
@@ -100,7 +99,7 @@ export class PlayerNode {
     const samples = this._queue.shift();
 
     this._isWriting = true;
-    await this._ringBuf.append(samples);
+    await this._ringBuf.write(samples);
 
     this._isWriting = false;
     this._checkBuffer(false);
