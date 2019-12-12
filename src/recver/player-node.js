@@ -16,9 +16,7 @@ export class PlayerNode {
     this._delaySamples = this._periodSamples * 4;
 
     this._queue = [];
-    this._ringBuf = new RingBuffer(
-      new Float32Array(this._periodSamples * 16)
-    );
+    this._ringBuf = new RingBuffer(new Float32Array(this._periodSamples * 16));
   }
 
   connect(dest) {

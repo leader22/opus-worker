@@ -11,27 +11,20 @@ export class AudioDecoder {
 
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
-        if (data.status !== 0) {
-          reject(data);
-          return;
-        }
+        if (data.status !== 0) return reject(data);
+
         resolve(data);
       };
 
-      this._worker.postMessage(
-        { config: {}, packets },
-        transferList
-      );
+      this._worker.postMessage({ config: {}, packets }, transferList);
     });
   }
 
   async decode(packet) {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
-        if (data.status !== 0) {
-          reject(data);
-          return;
-        }
+        if (data.status !== 0) return reject(data);
+
         resolve(data);
       };
 

@@ -10,7 +10,7 @@ export async function setupSender({ sampleRate }) {
     params: {
       application: 2048, // 2048: VoIP | 2049: Audio | 2051: RestrictedLowDelay
       sampling_rate: sampleRate, // Hz: 8000 | 12000 | 16000 | 24000 | 48000
-      frame_duration: 20, // ms: 2.5 | 5 | 10 | 20 | 40 | 60
+      frame_duration: 20 // ms: 2.5 | 5 | 10 | 20 | 40 | 60
     }
   };
 
@@ -25,7 +25,9 @@ export async function runSender({ encoder, sampleRate }) {
 
   const sender = new BroadcastChannel("opus");
 
-  const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const mediaStream = await navigator.mediaDevices.getUserMedia({
+    audio: true
+  });
 
   const audioContext = new AudioContext({ sampleRate });
   const sourceNode = audioContext.createMediaStreamSource(mediaStream);
@@ -44,9 +46,7 @@ export async function runSender({ encoder, sampleRate }) {
     setTimeout(() => sender.postMessage(packets), Math.random() * 10);
   };
 
-  sourceNode
-    .connect(sendNode)
-    .connect(audioContext.destination);
+  sourceNode.connect(sendNode).connect(audioContext.destination);
 
   // setTimeout(() => {
   //   sourceNode.disconnect();

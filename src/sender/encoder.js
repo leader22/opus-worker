@@ -6,10 +6,8 @@ export class AudioEncoder {
   async setup(config) {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
-        if (data.status !== 0) {
-          reject(data);
-          return;
-        }
+        if (data.status !== 0) return reject(data);
+
         resolve(data.packets);
       };
 
@@ -20,10 +18,7 @@ export class AudioEncoder {
   async encode(samples) {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
-        if (data.status !== 0) {
-          reject(data);
-          return;
-        }
+        if (data.status !== 0) return reject(data);
 
         resolve(data.packets);
       };
