@@ -23,6 +23,7 @@ export async function setupSender({ sampleRate }) {
 export async function runSender({ encoder, sampleRate }) {
   console.log("[sender] run");
 
+  // TODO: try WebSocket
   const sender = new BroadcastChannel("opus");
 
   const mediaStream = await navigator.mediaDevices.getUserMedia({

@@ -7,7 +7,6 @@ export class AudioEncoder {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
         if (data.status !== 0) return reject(data);
-
         resolve(data.packets);
       };
 
@@ -19,15 +18,15 @@ export class AudioEncoder {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
         if (data.status !== 0) return reject(data);
-
         resolve(data.packets);
       };
 
       this._worker.postMessage({
         samples,
-        timestamp: 0,
+        timestamp: Date.now(),
         transferable: true
-      });
+      },
+      [samples.buffer]);
     });
   }
 }
