@@ -2,21 +2,22 @@ import { RingBuffer } from "./ring-buffer.js";
 
 export class PlayerNode {
   constructor(audioContext, options = {}) {
+    const sampleSize = options.sampleSize || 1024;
     const numOfChannels = options.numOfChannels || 1;
     const delayUnit = options.delayUnit || 4;
 
-    this._node = audioContext.createScriptProcessor(1024, 0, numOfChannels);
+    this._node = audioContext.createScriptProcessor(sampleSize, 0, numOfChannels);
     this._node.onaudioprocess = this._onaudioprocess.bind(this);
 
     this._isWriting = false;
     this._isBuffering = true;
     this._isRequestingCheckBuffer = false;
 
-    this._periodSamples = 1024 * numOfChannels;
+    this._periodSamples = sampleSize * numOfChannels;
     this._delaySamples = this._periodSamples * delayUnit;
 
     // for playing
-    this._ringBuf = new RingBuffer(new Float32Array(this._periodSamples * delayUnit * 2));
+    this._ringBuf = new RingBuffer(new Float32Array(this._delaySamples  * 2));
     // for storing
     this._queue = [];
   }
@@ -59,7 +60,9 @@ export class PlayerNode {
     const size = this._ringBuf.read(buf) / N;
     for (let i = 0; i < N; ++i) {
       const ch = outputBuffer.getChannelData(i);
-      for (let j = 0; j < size; ++j) ch[j] = buf[j * N + i];
+      for (let j = 0; j < size; ++j) {
+        ch[j] = buf[j * N + i];
+      }
     }
 
     this._checkBuffer(true);

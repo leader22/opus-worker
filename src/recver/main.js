@@ -1,5 +1,5 @@
 import { AudioDecoder } from "./decoder.js";
-import { PlayerNode } from "./player-node.js";
+import { PlayerNode } from "./player-node/index.js";
 
 export async function setupRecver({ opusHeaderPackets }) {
   const decoder = new AudioDecoder("./worker/opus_decode_worker.js");

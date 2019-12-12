@@ -10,7 +10,7 @@ export async function setupSender({ sampleRate }) {
     params: {
       application: 2048, // 2048: VoIP | 2049: Audio | 2051: RestrictedLowDelay
       sampling_rate: sampleRate, // Hz: 8000 | 12000 | 16000 | 24000 | 48000
-      frame_duration: 20 // ms: 2.5 | 5 | 10 | 20 | 40 | 60
+      frame_duration: 10 // ms: 2.5 | 5 | 10 | 20 | 40 | 60
     }
   };
 
