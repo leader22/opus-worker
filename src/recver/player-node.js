@@ -56,7 +56,7 @@ export class PlayerNode {
 
     const N = outputBuffer.numberOfChannels;
     const buf = new Float32Array(outputBuffer.getChannelData(0).length * N);
-    const size = this._ringBuf.read_some(buf) / N;
+    const size = this._ringBuf.readSome(buf) / N;
     for (let i = 0; i < N; ++i) {
       const ch = outputBuffer.getChannelData(i);
       for (let j = 0; j < size; ++j) ch[j] = buf[j * N + i];
