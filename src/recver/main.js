@@ -15,7 +15,7 @@ export async function runRecver({ decoder, sampleRate }) {
   const recver = new BroadcastChannel("opus");
 
   const audioContext = new AudioContext({ sampleRate });
-  const playerNode = new PlayerNode(audioContext);
+  const playerNode = new PlayerNode(audioContext, {});
   playerNode.connect(audioContext.destination);
 
   recver.onmessage = async ({ data }) => {
