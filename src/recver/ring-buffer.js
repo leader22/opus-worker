@@ -9,16 +9,12 @@ export class RingBuffer {
   async append(data) {
     return new Promise((resolve, reject) => {
       // 書き込み処理が実施中の場合は常にrejectする
-      if (this._remainingWriteData) {
-        reject();
-        return;
-      }
+      if (this._remainingWriteData)
+        return reject();
 
       const size = this._appendSome(data);
-      if (size == data.length) {
-        resolve();
-        return;
-      }
+      if (size == data.length)
+        return resolve();
 
       // 空き容量がないので，読み込み処理が実施時に書き込むようにする
       this._remainingWriteData = [data.subarray(size), resolve];
@@ -27,15 +23,21 @@ export class RingBuffer {
 
   readSome(output) {
     let ret = this._readSome(output);
+
     if (this._remainingWriteData) {
       this._appendRemainingData();
-      if (ret < output.length) ret += this._readSome(output.subarray(ret));
+
+      if (ret < output.length) {
+        ret += this._readSome(output.subarray(ret));
+      }
     }
+
     return ret;
   }
 
   clear() {
-    this._readPos = this._writePos = 0;
+    this._writePos = 0;
+    this._readPos = 0;
     this._remainingWriteData = null;
   }
 
