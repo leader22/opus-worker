@@ -3,6 +3,9 @@ import { setupRecver, runRecver } from "./recver/main.js";
 import { createTransport, TRANSPORT_TYPES } from "./transport/index.js";
 
 (async () => {
+  // for Safari
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
   const sampleRate = 48000;
   const numOfChannels = 2;
   console.log("[main] use", { sampleRate, numOfChannels });
