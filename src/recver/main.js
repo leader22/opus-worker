@@ -11,15 +11,13 @@ export async function setupRecver({ opusHeaderPackets }) {
   return { decoder };
 }
 
-export async function runRecver({ decoder, sampleRate, numOfChannels }) {
-  const recver = new BroadcastChannel("opus");
-
+export async function runRecver({ decoder, recvTransport, sampleRate, numOfChannels }) {
   const audioContext = new AudioContext({ sampleRate });
   const playerNode = new PlayerNode(audioContext, { numOfChannels });
   playerNode.connect(audioContext.destination);
   playerNode.start();
 
-  recver.onmessage = async ({ data }) => {
+  recvTransport.onmessage = async ({ data }) => {
     for (const packet of data) {
       const { samples } = await decoder.decode(packet);
       playerNode.enqueue(samples);

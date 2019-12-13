@@ -20,11 +20,8 @@ export async function setupSender({ sampleRate, numOfChannels }) {
   return { encoder, opusHeaderPackets };
 }
 
-export async function runSender({ encoder, sampleRate, numOfChannels }) {
+export async function runSender({ encoder, sendTransport, sampleRate, numOfChannels }) {
   console.log("[sender] run");
-
-  // TODO: try WebSocket
-  const sender = new BroadcastChannel("opus");
 
   const mediaStream = await navigator.mediaDevices.getUserMedia({
     audio: true
@@ -50,7 +47,7 @@ export async function runSender({ encoder, sampleRate, numOfChannels }) {
     if (packets.length === 0) return;
 
     // send w/ networiking shim
-    setTimeout(() => sender.postMessage(packets), Math.random() * 10);
+    setTimeout(() => sendTransport.send(packets), Math.random() * 10);
   };
 
   sourceNode.connect(sendNode).connect(audioContext.destination);
