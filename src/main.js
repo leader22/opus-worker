@@ -3,9 +3,10 @@ import { setupRecver, runRecver } from "./recver/main.js";
 
 (async () => {
   const sampleRate = 48000;
-  console.log("[main] use sampleRate", sampleRate);
+  const numOfChannels = 2;
+  console.log("[main] use", { sampleRate, numOfChannels });
 
-  const { encoder, opusHeaderPackets } = await setupSender({ sampleRate });
+  const { encoder, opusHeaderPackets } = await setupSender({ sampleRate, numOfChannels });
   console.log("[sender] setup done!");
 
   const { decoder } = await setupRecver({ opusHeaderPackets });
@@ -13,6 +14,6 @@ import { setupRecver, runRecver } from "./recver/main.js";
 
   const [$runSender, $runRecver] = document.querySelectorAll("button");
 
-  $runSender.onclick = () => runSender({ encoder, sampleRate });
-  $runRecver.onclick = () => runRecver({ decoder, sampleRate });
+  $runSender.onclick = () => runSender({ encoder, sampleRate, numOfChannels });
+  $runRecver.onclick = () => runRecver({ decoder, sampleRate, numOfChannels });
 })();

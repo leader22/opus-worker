@@ -1,12 +1,12 @@
 import { AudioEncoder } from "./encoder.js";
 
-export async function setupSender({ sampleRate }) {
+export async function setupSender({ sampleRate, numOfChannels }) {
   const encoder = new AudioEncoder("./worker/opus_encode_worker.js");
 
   const encoderConfig = {
     // same as params to skip resampling
     sampling_rate: sampleRate,
-    num_of_channels: 2,
+    num_of_channels: numOfChannels,
     params: {
       application: 2048, // 2048: VoIP | 2049: Audio | 2051: RestrictedLowDelay
       sampling_rate: sampleRate, // Hz: 8000 | 12000 | 16000 | 24000 | 48000
@@ -20,7 +20,7 @@ export async function setupSender({ sampleRate }) {
   return { encoder, opusHeaderPackets };
 }
 
-export async function runSender({ encoder, sampleRate }) {
+export async function runSender({ encoder, sampleRate, numOfChannels }) {
   console.log("[sender] run");
 
   // TODO: try WebSocket
@@ -33,8 +33,8 @@ export async function runSender({ encoder, sampleRate }) {
   const audioContext = new AudioContext({ sampleRate });
   // numOfInputs: 0, nunOfOutputs: 1, channelCount: 2
   const sourceNode = audioContext.createMediaStreamSource(mediaStream);
-  // 0: auto bufferSize = 1024 in Chrome, 2 input channel, 1 output channel(required)
-  const sendNode = audioContext.createScriptProcessor(0, sourceNode.channelCount, 1);
+  // 0: auto bufferSize = 1024 in Chrome, 2 input channel(default), 1 output channel(required)
+  const sendNode = audioContext.createScriptProcessor(0, numOfChannels || sourceNode.channelCount, 1);
   sendNode.onaudioprocess = async ({ inputBuffer }) => {
     const N = inputBuffer.numberOfChannels;
     const buf = new Float32Array(inputBuffer.length * N);
