@@ -18,6 +18,8 @@ import { createTransport, TRANSPORT_TYPES } from "./transport/index.js";
 
   const sendTransport = await createTransport(TRANSPORT_TYPES.BROADCAST_CHANNEL, "opus");
   const recvTransport = await createTransport(TRANSPORT_TYPES.BROADCAST_CHANNEL, "opus");
+  // const sendTransport = await createTransport(TRANSPORT_TYPES.WEBSOCKET, "ws://localhost:8080");
+  // const recvTransport = await createTransport(TRANSPORT_TYPES.WEBSOCKET, "ws://localhost:8080");
 
   const [$runSender, $runRecver] = document.querySelectorAll("button");
 

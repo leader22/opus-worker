@@ -13,8 +13,8 @@ export async function createTransport(type, channelId = Date.now()) {
   if (type === TRANSPORT_TYPES.WEBSOCKET) {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(channelId);
-      ws.onopen = resolve;
-      ws.onerror = reject;
+      ws.onopen = () => resolve(ws);
+      ws.onerror = err => reject(err);
     });
   }
 

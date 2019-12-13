@@ -20,6 +20,7 @@ export async function runRecver({ decoder, recvTransport, sampleRate, numOfChann
   recvTransport.onmessage = async ({ data }) => {
     for (const packet of data) {
       const { samples } = await decoder.decode(packet.data);
+      // const { samples } = await decoder.decode(data.data);
       playerNode.enqueue(samples);
     }
   };
