@@ -47,10 +47,11 @@ export async function runSender({ encoder, sendTransport, sampleRate, numOfChann
     if (packets.length === 0) return;
 
     // send w/ networiking shim
-    setTimeout(() => sendTransport.send(packets), Math.random() * 10);
-    // for (const packet of packets) {
-    //   sendTransport.send(packet);
-    // }
+    // setTimeout(() => sendTransport.send(packets), Math.random() * 10);
+    sendTransport.send(`${packets.length}`);
+    for (const packet of packets) {
+      sendTransport.send(packet.data);
+    }
   };
 
   sourceNode.connect(sendNode).connect(audioContext.destination);
