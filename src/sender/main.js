@@ -6,7 +6,7 @@ export async function setupSender({ sampleRate }) {
   const encoderConfig = {
     // same as params to skip resampling
     sampling_rate: sampleRate,
-    num_of_channels: 1,
+    num_of_channels: 2,
     params: {
       application: 2048, // 2048: VoIP | 2049: Audio | 2051: RestrictedLowDelay
       sampling_rate: sampleRate, // Hz: 8000 | 12000 | 16000 | 24000 | 48000
@@ -31,16 +31,22 @@ export async function runSender({ encoder, sampleRate }) {
   });
 
   const audioContext = new AudioContext({ sampleRate });
+  // numOfInputs: 0, nunOfOutputs: 1, channelCount: 2
   const sourceNode = audioContext.createMediaStreamSource(mediaStream);
-  // 0 = auto bufferSize / 1 input channel / 1 output channel(required)
-  const sendNode = audioContext.createScriptProcessor(0, 1, 1);
+  // 0: auto bufferSize = 1024 in Chrome, 2 input channel, 1 output channel(required)
+  const sendNode = audioContext.createScriptProcessor(0, sourceNode.channelCount, 1);
   sendNode.onaudioprocess = async ({ inputBuffer }) => {
-    // Float32Array: auto size is 1024 by auto in Chrome
-    // here monoural
-    const samples = inputBuffer.getChannelData(0);
+    const N = inputBuffer.numberOfChannels;
+    const buf = new Float32Array(inputBuffer.length * N);
+    for (let i = 0; i < N; ++i) {
+      const ch = inputBuffer.getChannelData(i);
+      for (let j = 0; j < ch.length; ++j) {
+        buf[j * N + i] = ch[j];
+      }
+    }
 
     // into opus
-    const packets = await encoder.encode(samples);
+    const packets = await encoder.encode(buf);
     if (packets.length === 0) return;
 
     // send w/ networiking shim

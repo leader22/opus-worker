@@ -2,12 +2,11 @@ import { RingBuffer } from "./ring-buffer.js";
 
 export class PlayerNode {
   constructor(audioContext, options = {}) {
-    const sampleSize = options.sampleSize || 0;
-    const numOfChannels = options.numOfChannels || 1;
+    const numOfChannels = options.numOfChannels || 2;
     const delayUnit = options.delayUnit || 4;
 
     this._node = audioContext.createScriptProcessor(
-      sampleSize,
+      0,
       0,
       numOfChannels
     );
