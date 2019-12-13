@@ -14,6 +14,7 @@ export class AudioEncoder {
     });
   }
 
+  // samples: Float32Array
   async encode(samples) {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {

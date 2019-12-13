@@ -19,14 +19,15 @@ export class AudioDecoder {
     });
   }
 
-  async decode(packet) {
+  // buf: ArrayBuffer
+  async decode(buf) {
     return new Promise((resolve, reject) => {
       this._worker.onmessage = ({ data }) => {
         if (data.status !== 0) return reject(data);
         resolve(data);
       };
 
-      this._worker.postMessage(packet, [packet.data]);
+      this._worker.postMessage({ data: buf }, [buf]);
     });
   }
 }
